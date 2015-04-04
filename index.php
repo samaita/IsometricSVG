@@ -2,23 +2,48 @@
 	<head>
 		<title>ISOMETRIC</title>
 		<style>
+
+			body{
+				margin:0px;
+			}
 			object, svg{
 				position: absolute;
 			}
-			div#loadCanvas {
-			    transform: scale(0.5);
+			svg{
+				transition: all 250ms;
+				transform: scale(0.5);
 			    -webkit-transform:scale(0.5);
 			    -ms-transform:scale(0.5);
    			    -o-transform:scale(0.5);
+			}
+			div#loadCanvas {
 			    width: 100%;
-			    height:400px;
-			    margin-top: 25%;
+			    overflow:hidden;
+			    height:100%;
+			}
+			
+			.selected{
+				transform: scale(1.5) !important;
+			    -webkit-transform:scale(1.5) !important;
+			    -ms-transform:scale(1.5) !important;
+   			    -o-transform:scale(1.5) !important;
+   			    z-index: 1000 !important;
+			}
+
+			#blackLayer{
+				background: rgba(0,0,0,0.5);
+				width:100%;
+				height:100%;
+				position:absolute;
+				z-index: 999;
+				top: 0;
 			}
 		</style>
 		<script src='assets/jquery/jquery.min.js'></script>
 		<script>
 			$(document).ready(function(){
-				
+				$('#blackLayer').hide();
+
 				var frst1 = getSVG("frst-1");
 
 				var rd13 = getSVG("rd-1-3");
@@ -76,9 +101,9 @@
 				var maxCount = 1;
 				for(var zCount = map[0].length - 1;zCount > -1 ; zCount--){
 					for(var xCount = 0; xCount < map.length; xCount++){
-						console.log(xCount, zCount);
+						//console.log(xCount, zCount);
 						var objectName = (map[xCount][zCount]);
-						console.log(map[xCount][zCount]);
+						//console.log(map[xCount][zCount]);
 						//$("#loadCanvas").append(setProp(objectName, xCount, zCount, map[0].length-1));
 						setObj(objectName, xCount, zCount, map[0].length-1, maxCount);
 						//setObjPosition(xCount, zCount, map[0].length-1);
@@ -86,52 +111,116 @@
 					}
 				}
 			});
-			
+
 			// Load as SVG Not Object
 			function setObj(data, xIndex, zIndex, max, Count){
 				$.get(data, function( data ) {
-					marginLeft = (xIndex + zIndex - Math.floor(max/2)) * 122.20; 
-					marginTop = (xIndex - zIndex - Math.floor(max/2)) * 70.5; 
+					marginLeft = (xIndex + zIndex - Math.floor(max/2)) * 59.2; 
+					marginTop = (xIndex - zIndex - Math.floor(max/2)) * 34.2; 
 					a = (new XMLSerializer()).serializeToString(data);
 					a = a.substring(4);
 					a = "<svg id=obj"+ xIndex + zIndex +" style='margin-left:"+ marginLeft +"px;margin-top:"+ marginTop +"px; z-index:"+Count+"'" + a;
 					$("#loadCanvas").append(a);
+					addInteractivity("svg#obj"+xIndex+zIndex);
 					return a;
+				});			
+			}
+
+			function addInteractivity(id){
+				//fly(id);
+				select(id);
+			}
+
+			function fly(object){
+				// console.log(object+':hover');
+				// marginTopValue = $(object).css('margin-top');
+				// marginTopValue = Number(marginTopValue.substring(0, marginTopValue.length-2));
+				// $(object+':hover').css('margin-top',marginTopValue-10 + '!important');
+				// $(object).hover(function(){
+				// 	marginTopValue = $(this).css('margin-top');
+				// 	marginTopValue = Number(marginTopValue.substring(0, marginTopValue.length-2));
+				// 	$(this).css('margin-top',marginTopValue-10);
+				// 	console.log(marginTopValue-10);
+				// });
+				$(object)
+				.mouseenter(
+					function(){
+						marginTopValue = $(this).css('margin-top');
+						marginTopValue = Number(marginTopValue.substring(0, marginTopValue.length-2));
+						$(this).css('margin-top',marginTopValue-10);
+					})
+				.mouseleave(
+					function(){
+						marginTopValue = $(this).css('margin-top');
+						marginTopValue = Number(marginTopValue.substring(0, marginTopValue.length-2));
+						$(this).css('margin-top',marginTopValue+10);
+					});
+
+			}
+
+			function select(object){
+				$(object).click(function(){
+					$(this).attr("class",'selected');
+					$('#blackLayer').fadeIn();
 				});
+				$(object).dblclick(function(){
+					$(this).attr("class",'');
+					$('#blackLayer').fadeOut();
+				})
 			}
 
+			// function setObjIdPosition(xIndex, zIndex, max, Count){
+			// 	$("#loadCanvas svg:nth-child("+Count+")").attr('id','obj'+xCount+ zCount);
+			// 	console.log("LOAD");
+			// }
 
+			//Attempt of reducing total request by assign every map as an object, then load it to map, not request it again and again
 
-			function setObjIdPosition(xIndex, zIndex, max, Count){
-				$("#loadCanvas svg:nth-child("+Count+")").attr('id','obj'+xCount+ zCount);
-				console.log("LOAD");
-			}
+			// function getSVG(param){
+			// 	var assetsLocation = "assets/svg/";
+			// 	mapTile(assetsLocation + param + ".svg");
+			// 	return assetsLocation + param + ".svg"; 
+			// }			
 
+			// function mapTile(param){
+			// 	this.desc = param;
+			// 	this.map = $.get(param, function( data ) {
+			// 		//marginLeft = (xIndex + zIndex - Math.floor(max/2)) * 122.20; 
+			// 		//marginTop = (xIndex - zIndex - Math.floor(max/2)) * 70.5; 
+			// 		a = (new XMLSerializer()).serializeToString(data);
+			// 	}).done(function() {
+			// 		 return data.responseText;
+			// 	});
+			// }
+
+			//Load SVG file
 			function getSVG(param){
 				var assetsLocation = "assets/svg/";
 				return assetsLocation + param + ".svg"; 
 			}
 
-			function setProp(data, xIndex, zIndex, max){
-				marginLeft = (xIndex + zIndex - Math.floor(max/2)) * 122.20; 
-				marginTop = (xIndex - zIndex - Math.floor(max/2)) * 70.5; 
-				return "<object id=obj"+ xIndex + zIndex +" data="+ data +" style='margin-left:"+ marginLeft +"px;margin-top:"+ marginTop +"px' onload=setClick('"+data+"',"+xIndex+"," +zIndex+");></object>";
-			}
+			// function setProp(data, xIndex, zIndex, max){
+			// 	marginLeft = (xIndex + zIndex - Math.floor(max/2)) * 122.20; 
+			// 	marginTop = (xIndex - zIndex - Math.floor(max/2)) * 70.5; 
+			// 	return "<object id=obj"+ xIndex + zIndex +" data="+ data +" style='margin-left:"+ marginLeft +"px;margin-top:"+ marginTop +"px' onload=setClick('"+data+"',"+xIndex+"," +zIndex+");></object>";
+			// }
 
-			function setClick(objectName, xCount, zCount){
-				b = "obj"+xCount+zCount;
-				c = objectName.substring(11, objectName.length-4);
-				var a = document.getElementById(b).contentDocument.getElementById(c);
-				//console.log(a, b, c);
-				$(a).click(function(){
-					console.log(c);
-				});
-				// console.log('done');
-			}
+			// function setClick(objectName, xCount, zCount){
+			// 	b = "obj"+xCount+zCount;
+			// 	c = objectName.substring(11, objectName.length-4);
+			// 	var a = document.getElementById(b).contentDocument.getElementById(c);
+			// 	//console.log(a, b, c);
+			// 	$(a).click(function(){
+			// 		console.log(c);
+			// 	});
+			// 	// console.log('done');
+			// }
 		</script>
 	</head>
 	<body>
+		
 		<div id='loadCanvas'>
+			<div id='blackLayer'></div>
 
 		</div>
 	</body>
